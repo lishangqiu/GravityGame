@@ -9,10 +9,35 @@ class Game extends Phaser.Scene{
     }
 
     create(){
-        var bg = this.add.image(960, 540, "background");
-        this.circle = this.add.circle(400, 300, 300, 0xff6699);
+        var bg = this.add.image(960, 468.5, "background");
+
+        this.createBody(0, 0, 0, 0, 69.34e9, 1.989e30);
+        this.createBody(149e9, 0, 0, 30000, 6.73e9, 5.972e24);
+        
+    }
+
+    createCircle(x, y, radius){
+        return this.add.circle(x, y, radius, 0x035956);
+    }
+
+    update(){
+        GravityBodies.forEach(function(item, index, array) {
+            item.drawNewPos();
+        });
+    }
+
+    createBody(posX, posY, velocityX, velocityY, radius, mass){
+        const config = {
+            starting_pos : new Victor(posX, posY),
+            starting_velocity : new Victor(velocityX, velocityY),
+            radius : radius,
+            mass : mass,
+            sceneObj : this,
+        };
+        GravityBodies.push(new GravityBody(config));
     }
 }
+
 const config = {
     parent: "game",
     type: Phaser.AUTO,
@@ -25,6 +50,6 @@ const config = {
     backgroundColor: "#FF0000",
     scene: [Game]
 }
+
+var GravityBodies = [];
 var game = new Phaser.Game(config);
-console.log(window.innerWidth);
-console.log(window.innerHeight);
