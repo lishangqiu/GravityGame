@@ -1,9 +1,12 @@
 const gravitationalConstant = 6.67428e-11;
 //const screenScale = 0.00000470883; // pixel/meter
 const screenScale = 0.000000002; // pixel/meter
-const updateTime = 1000000; // simulated second/real world second
-const radiusUpscale = 1;
+const resolutionTime = 16000; // simulated second/real world second
+const radiusUpscale = 500;
 const labelDegree = -225;
+
+const middleX = 960;
+const middleY = 468.5;
 
 var a = 0;
 var b =0;
@@ -39,7 +42,6 @@ class GravityBody{
     simGravity(){
         // this is seperate from updatePos because we might want to calculate path
         //var deltaTime = ((new Date().getTime() - this.lastSimulated) / 1000) * updateTime; // /1000 is to convert from ms to s
-        var deltaTime = 16000;
         this.lastSimulated = new Date().getTime();
         var currID = this.id;
         var mass = this.mass;
@@ -53,18 +55,18 @@ class GravityBody{
             }
         });
         console.log(accelerations);
-        var gravitySumVelocity = GravityBody.addVectors(accelerations).multiplyScalar(deltaTime);
+        var gravitySumVelocity = GravityBody.addVectors(accelerations).multiplyScalar(resolutionTime);
         gravitySumVelocity.add(this.velocity);
         this.velocity = gravitySumVelocity;
         
-        this.pos.add(gravitySumVelocity.clone().multiplyScalar(deltaTime)); // add the displacement to the current position
+        this.pos.add(gravitySumVelocity.clone().multiplyScalar(resolutionTime)); // add the displacement to the current position
 
 
         if (
             (Math.abs(((this.pos.x * screenScale) - this.lastPoint.x)) > 1) ||
             (Math.abs(((this.pos.y * screenScale) - this.lastPoint.y)) > 1)){
-            this.sceneObj.add.line(0, 0, this.lastPoint.x + 960, this.lastPoint.y + 468.5,
-                (this.pos.x * screenScale) + 960, (this.pos.y * screenScale) + 468.5, 0xf8f9f0);
+            this.sceneObj.add.line(0, 0, this.lastPoint.x + middleX, this.lastPoint.y + middleY,
+                (this.pos.x * screenScale) + middleX, (this.pos.y * screenScale) + middleY, 0xf8f9f0);
             this.lastPoint = this.pos.clone().multiplyScalar(screenScale);
         }
         return;
@@ -72,7 +74,7 @@ class GravityBody{
 
     drawNewPos(){
         this.simGravity();
-        this.sprite.setPosition(this.pos.x * screenScale + 960, this.pos.y * screenScale + 468.5);
+        this.sprite.setPosition(this.pos.x * screenScale + middleX, this.pos.y * screenScale + middleY);
 
         var diplacements = this.getAngleDisplacements(this.radius * screenScale * radiusUpscale);
         this.label.setPosition(this.sprite.x - diplacements[0], this.sprite.y - diplacements[1] - this.label.displayHeight);
