@@ -1,13 +1,16 @@
 const gravitationalConstant = 6.67428e-11;
 //const screenScale = 0.00000470883; // pixel/meter
-const screenScale = 0.000000001; // pixel/meter
-const updateTime = 1; // simulated second/real world second
+const screenScale = 0.000000002; // pixel/meter
+const updateTime = 1000000; // simulated second/real world second
+const radiusUpscale = 1;
+const labelDegree = -225;
 
-
+var a = 0;
+var b =0;
 var _idIndex = 0;
 
 class GravityBody{
-    // starting_pos, starting_velocity, radius, (density or mass) in SI units
+    // starting_pos(note coordinates start from the center as 0,0), starting_velocity, radius, (density or mass) in SI units
     constructor(options){
         this.pos = options.starting_pos.clone();
         this.velocity = options.starting_velocity.clone();
@@ -21,17 +24,22 @@ class GravityBody{
         }
         
         this.sceneObj = options.sceneObj;
-        this.drawObj = this.sceneObj.createCircle(options.starting_pos.x + 960, options.starting_pos.y + 468.5, this.radius * screenScale);
+        this.initDraw(this.radius, options.textureName);
+
         this.lastSimulated = new Date().getTime();
 
         this.id = _idIndex;
         _idIndex += 1;
+
+        this.pathPoints = [];
+        this.lastPoint = this.pos.clone().multiplyScalar(screenScale);
     }
 
     // returns displacement(unit: m)
     simGravity(){
         // this is seperate from updatePos because we might want to calculate path
-        var deltaTime = ((new Date().getTime() - this.lastSimulated) * 1000) * updateTime; // *1000 is to convert from ms to s
+        //var deltaTime = ((new Date().getTime() - this.lastSimulated) / 1000) * updateTime; // /1000 is to convert from ms to s
+        var deltaTime = 16000;
         this.lastSimulated = new Date().getTime();
         var currID = this.id;
         var mass = this.mass;
@@ -44,17 +52,43 @@ class GravityBody{
                 accelerations.push(GravityBody.getGravityAcceleration(mass, item.mass, pos, item.pos));
             }
         });
+        console.log(accelerations);
         var gravitySumVelocity = GravityBody.addVectors(accelerations).multiplyScalar(deltaTime);
         gravitySumVelocity.add(this.velocity);
         this.velocity = gravitySumVelocity;
         
         this.pos.add(gravitySumVelocity.clone().multiplyScalar(deltaTime)); // add the displacement to the current position
+
+
+        if (
+            (Math.abs(((this.pos.x * screenScale) - this.lastPoint.x)) > 1) ||
+            (Math.abs(((this.pos.y * screenScale) - this.lastPoint.y)) > 1)){
+            this.sceneObj.add.line(0, 0, this.lastPoint.x + 960, this.lastPoint.y + 468.5,
+                (this.pos.x * screenScale) + 960, (this.pos.y * screenScale) + 468.5, 0xf8f9f0);
+            this.lastPoint = this.pos.clone().multiplyScalar(screenScale);
+        }
         return;
     }
 
     drawNewPos(){
         this.simGravity();
-        this.drawObj.setPosition(this.pos.x * screenScale + 960, this.pos.y * screenScale + 468.5);
+        this.sprite.setPosition(this.pos.x * screenScale + 960, this.pos.y * screenScale + 468.5);
+
+        var diplacements = this.getAngleDisplacements(this.radius * screenScale * radiusUpscale);
+        this.label.setPosition(this.sprite.x - diplacements[0], this.sprite.y - diplacements[1] - this.label.displayHeight);
+    }
+
+    initDraw(radius, textureName){
+        this.sprite = this.sceneObj.add.sprite(-1, -1, textureName);
+        this.sprite.displayWidth = radius * screenScale * radiusUpscale *2; // times two for diameter(scaling the image)
+        this.sprite.scaleY = this.sprite.scaleX;
+
+        this.label = this.sceneObj.add.text(-1, -1, textureName, {color:"#00ffff"})
+        this.sceneObj.add.circle()
+    }
+
+    getAngleDisplacements(radius){
+        return [Math.cos((labelDegree/180)*Math.PI)*radius, Math.sin((labelDegree/180)*Math.PI)*radius]
     }
 }
 
