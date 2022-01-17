@@ -1,5 +1,5 @@
 # GravityGame
 
-**Please note that this is now on my website's repository, and it's being updated there.**
+**Note: Merged with website, so I actually updated a lot on the website repo**
 
 A little gravity simulation game. It's now on my website https://lishangqiu.github.io.
