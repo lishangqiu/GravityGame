@@ -1,5 +1,7 @@
 # GravityGame
 
-**Note: Merged with website, so I actually updated a lot on the website repo**
 
 A little gravity simulation game. It's now on my website https://lishangqiu.github.io.
+
+**Note: Merged with website a bit ago, so I actually commited a lot to website repo**
+In hindsight, I probably should've used subrepo for github, but its already too late lol.
